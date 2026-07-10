@@ -1,0 +1,315 @@
+import { API } from './axios';
+import { setCookie, eraseCookie } from '../utils';
+
+// ─── Login ────────────────────────────────────────────────────────────────────
+export const loginApi = async (credentials: { email: string; password: string }) => {
+  const response = await API.post('/login', credentials);
+  const data = response.data;
+
+  // Persist the JWT so the request interceptor can attach it automatically
+  if (data?.data?.token) {
+    localStorage.setItem('authToken', data.data.token);
+    setCookie('authToken', data.data.token, 7);
+  }
+
+  return data;
+};
+
+// ─── Forgot Password ──────────────────────────────────────────────────────────
+export const forgotPasswordApi = async (payload: { email: string }) => {
+  const response = await API.post('/forgot-password', payload);
+  return response.data;
+};
+
+// ─── Verify OTP ───────────────────────────────────────────────────────────────
+export const verifyOtpApi = async (payload: { email: string; otp: number }) => {
+  const response = await API.post('/verify-otp', payload);
+  const data = response.data;
+
+  // Store the resetToken returned after successful OTP verification
+  if (data?.data?.resetToken) {
+    localStorage.setItem('resetToken', data.data.resetToken);
+    setCookie('resetToken', data.data.resetToken, 1);
+  }
+
+  return data;
+};
+
+// ─── Reset Password ───────────────────────────────────────────────────────────
+export const resetPasswordApi = async (payload: {
+  resetToken: string;
+  password: string;
+}) => {
+  const response = await API.post('/reset-password', payload);
+  return response.data;
+};
+
+// ─── Update Password (authenticated admin) ────────────────────────────────────
+export const updatePasswordApi = async (payload: {
+  currentPassword: string;
+  newPassword: string;
+}) => {
+  const response = await API.put('/update-password', payload);
+  return response.data;
+};
+
+// ─── Logout (local-only) ──────────────────────────────────────────────────────
+export const logoutApi = () => {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('resetToken');
+  eraseCookie('authToken');
+  eraseCookie('resetToken');
+};
+
+// ─── Get Profile ──────────────────────────────────────────────────────────────
+export const getProfileApi = async () => {
+  const response = await API.get('/profile');
+  return response.data;
+};
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+export interface DashboardData {
+  totalUsers: number;
+  activeUsers: number;
+  attendance: {
+    currentlyAtVenues: number;
+    todayCheckIns: number;
+  };
+  analytics: {
+    newUsersThisWeek: number;
+    venueVisitsThisWeek: number;
+    messagesThisWeek: number;
+    friendRequestsThisWeek: number;
+  };
+}
+
+export const getDashboardApi = async (): Promise<DashboardData> => {
+  const response = await API.get('/dashboard');
+  return response.data?.data as DashboardData;
+};
+
+// ─── Activity Trends ──────────────────────────────────────────────────────────
+export type TrendPeriod = 'daily' | 'weekly' | 'monthly';
+
+export interface TrendPoint {
+  date: string | null;
+  newUsers?: number;
+  venueVisits?: number;
+  messages?: number;
+}
+
+export interface ActivityTrendsData {
+  period: TrendPeriod;
+  trends: TrendPoint[];
+}
+
+export const getActivityTrendsApi = async (
+  period: TrendPeriod = 'daily'
+): Promise<ActivityTrendsData> => {
+  const response = await API.get(`/activity-trends?period=${period}`);
+  return response.data?.data as ActivityTrendsData;
+};
+
+// ─── User Management ──────────────────────────────────────────────────────────
+export interface UserProfilePicture {
+  _id: string;
+  location: string;
+  mimetype: string;
+  size: number;
+}
+
+export interface AdminUser {
+  _id: string;
+  name: string | null;
+  email: string;
+  profilePicture: UserProfilePicture | null;
+  dob: string | null;
+  gender: string | null;
+  createdAt: string;
+  updatedAt: string;
+  role: string;
+  isEmailVerified: boolean;
+  isProfileCompleted: boolean;
+  isDeactivatedByAdmin: boolean;
+  banReason: string | null;
+  bannedAt: string | null;
+}
+
+export interface UsersResponse {
+  success: boolean;
+  message: string;
+  data: AdminUser[];
+  pagination: {
+    itemsPerPage: number;
+    currentPage: number;
+    totalItems: number;
+    totalPages: number;
+  };
+}
+
+export const getUsersApi = async (
+  page = 1,
+  limit = 10,
+  filter = "all"
+): Promise<UsersResponse> => {
+  const response = await API.get(`/users?page=${page}&limit=${limit}&filter=${filter}`);
+  return response.data;
+};
+
+export const getUserByIdApi = async (
+  id: string
+): Promise<{ success: boolean; message: string; data: AdminUser }> => {
+  const response = await API.get(`/users/${id}`);
+  return response.data;
+};
+
+export const deleteUserApi = async (id: string): Promise<any> => {
+  const response = await API.delete(`/users/${id}`);
+  return response.data;
+};
+
+export const banUserApi = async (
+  id: string,
+  reason: string
+): Promise<any> => {
+  const response = await API.patch(`/users/${id}/ban`, {
+    reason,
+  });
+  return response.data;
+};
+
+export const unbanUserApi = async (
+  id: string
+): Promise<any> => {
+  const response = await API.patch(`/users/${id}/unban`);
+  return response.data;
+};
+
+export const updateUserApi = async (
+  id: string,
+  payload: Partial<AdminUser>
+): Promise<any> => {
+  const response = await API.put(`/users/${id}`, payload);
+  return response.data;
+};
+
+export const createUserApi = async (
+  payload: any
+): Promise<any> => {
+  const response = await API.post(`/users`, payload);
+  return response.data;
+};
+
+// ─── User Activity ────────────────────────────────────────────────────────────
+export interface AccountActivityItem {
+  _id: string;
+  deviceModel: string;
+  ipAddress: string;
+  userAgent: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FriendItem {
+  _id: string;
+  name: string | null;
+  email: string;
+  profilePicture: UserProfilePicture | null;
+  dob: string | null;
+  gender: string | null;
+}
+
+export interface UserActivityData {
+  attendanceHistory: any[];
+  friends: FriendItem[];
+  messagingActivity: {
+    totalMessages: number;
+    recentMessages: any[];
+  };
+  accountActivity: AccountActivityItem[];
+  pagination: {
+    itemsPerPage: number;
+    currentPage: number;
+    totalItems: number;
+    totalPages: number;
+  };
+}
+
+export const getUserActivityApi = async (
+  id: string,
+  page = 1,
+  limit = 10
+): Promise<{ success: boolean; message: string; data: UserActivityData }> => {
+  const response = await API.get(`/users/${id}/activity?page=${page}&limit=${limit}`);
+  return response.data;
+};
+
+// ─── Reports Management ───────────────────────────────────────────────────────
+export interface ReportParty {
+  _id: string;
+  name: string | null;
+  email: string;
+  profilePicture: any;
+}
+
+export interface AdminReport {
+  _id: string;
+  reportedBy: ReportParty | null;
+  reported: {
+    _id: string;
+    name: string | null;
+    email?: string;
+    profilePicture?: any;
+  } | null;
+  type: string;
+  targetModel: string;
+  action: string;
+  reason: string;
+  status: string;
+  isBlocked: boolean;
+  isReported: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReportsResponse {
+  success: boolean;
+  message: string;
+  data: AdminReport[];
+  pagination: {
+    itemsPerPage: number;
+    currentPage: number;
+    totalItems: number;
+    totalPages: number;
+  };
+}
+
+export const getReportsApi = async (
+  page = 1,
+  limit = 10
+): Promise<ReportsResponse> => {
+  const response = await API.get(`/reports?page=${page}&limit=${limit}`);
+  return response.data;
+};
+
+export const getReportByIdApi = async (
+  id: string
+): Promise<{ success: boolean; message: string; data: AdminReport }> => {
+  const response = await API.get(`/reports/${id}`);
+  return response.data;
+};
+
+export interface UpdateReportPayload {
+  action: "accept" | "reject";
+  status: "resolve";
+  banUser?: boolean;
+  reason: string;
+}
+
+export const updateReportApi = async (
+  id: string,
+  payload: UpdateReportPayload
+): Promise<any> => {
+  const response = await API.patch(`/reports/${id}`, payload);
+  return response.data;
+};
