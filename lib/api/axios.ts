@@ -1,4 +1,6 @@
 import axios from "axios";
+import { store } from "../store";
+import { logout } from "../slices/authSlice";
 
 export const baseURL = "https://api.staging.barhuddle.com/admin";
 
@@ -19,7 +21,7 @@ export const API = axios.create({
 // Request Interceptor
 API.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("authToken"); // Retrieve token from storage
+    const token = typeof window !== 'undefined' ? localStorage.getItem("authToken") : null; // Retrieve token safely from storage
     if (token) {
       config.headers.authorization = `Bearer ${token}`;
     }
@@ -33,8 +35,8 @@ API.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error?.response?.status === 401) {
-      localStorage.removeItem("authToken"); // Remove token if unauthorized
-      if (!window.location.pathname.includes("auth")) {
+      store.dispatch(logout()); 
+      if (typeof window !== 'undefined' && !window.location.pathname.includes("auth")) {
         window.location.href = "/auth/login"; 
       }
     }
@@ -43,3 +45,4 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+

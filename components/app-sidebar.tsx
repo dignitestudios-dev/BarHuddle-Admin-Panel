@@ -92,7 +92,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Bar Huddle</span>
-                  <span className="truncate text-xs">Admin Dashboard</span>
+                  <span className="text-muted-foreground group-hover/menu-item:text-sidebar-accent-foreground/80 truncate text-xs">
+                    Admin Dashboard
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>

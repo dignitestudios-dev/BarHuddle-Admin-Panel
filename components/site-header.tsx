@@ -30,7 +30,7 @@ export function SiteHeader() {
             orientation="vertical"
             className="mx-2 data-[orientation=vertical]:h-4"
           />
-          <div className="ml-auto flex items-center gap-2">
+          {/* <div className="ml-auto flex items-center gap-2">
             <Button
               variant="ghost"
               asChild
@@ -45,7 +45,7 @@ export function SiteHeader() {
                 Quick Links
               </Link>
             </Button>
-          </div>
+          </div> */}
         </div>
       </header>
     </>

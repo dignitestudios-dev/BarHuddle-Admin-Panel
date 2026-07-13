@@ -7,9 +7,11 @@ import { verifyOtpApi } from "@/lib/api/auth.api";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+const OTP_LENGTH = 4;
+
 // Wrapped in its own component so it can use useSearchParams safely
 const VerificationForm = () => {
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,7 +36,7 @@ const VerificationForm = () => {
     setOtp(newOtp);
 
     // Auto focus to next input
-    if (value && index < 5) {
+    if (value && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -56,7 +58,7 @@ const VerificationForm = () => {
       }
     } else if (e.key === "ArrowLeft" && index > 0) {
       inputRefs.current[index - 1]?.focus();
-    } else if (e.key === "ArrowRight" && index < 5) {
+    } else if (e.key === "ArrowRight" && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -66,7 +68,7 @@ const VerificationForm = () => {
     setError("");
     const otpCode = otp.join("");
 
-    if (otpCode.length !== 6) return;
+    if (otpCode.length !== OTP_LENGTH) return;
 
     setLoading(true);
     try {
@@ -74,10 +76,24 @@ const VerificationForm = () => {
       // resetToken is stored in localStorage by verifyOtpApi
       router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
-      const message =
+      let rawMessage =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
         "Invalid or expired OTP. Please try again.";
+
+      if (Array.isArray(rawMessage)) {
+        rawMessage = rawMessage.join(", ");
+      }
+
+      let message = String(rawMessage);
+      if (
+        message.toLowerCase().includes("too small") ||
+        message.toLowerCase().includes("expected number") ||
+        message.toLowerCase().includes("must be")
+      ) {
+        message = "Please enter a valid OTP.";
+      }
+
       setError(message);
     } finally {
       setLoading(false);
@@ -93,7 +109,7 @@ const VerificationForm = () => {
           Verify Your Email
         </h2>
         <p className="text-gray-600">
-          We've sent a 6-digit code to{" "}
+          We've sent a {OTP_LENGTH}-digit code to{" "}
           {email ? <strong>{email}</strong> : "your email address"}. Enter it
           below.
         </p>

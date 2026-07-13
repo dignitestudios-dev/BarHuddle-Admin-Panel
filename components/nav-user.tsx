@@ -62,7 +62,7 @@ export function NavUser({
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
-                <span className="text-muted-foreground truncate text-xs">
+                <span className=" group-hover/menu-item:text-sidebar-accent-foreground/80 truncate text-xs">
                   {user.email}
                 </span>
               </div>
@@ -92,14 +92,14 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem asChild className="cursor-pointer">
                 <Link href="/dashboard/settings/security">
-                  <KeyRound />
+                  <KeyRound className="hover:text-white" />
                   Change Password
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-              <LogOut />
+              <LogOut className="hover:text-white" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

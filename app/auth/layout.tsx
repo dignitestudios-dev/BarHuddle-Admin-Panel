@@ -24,7 +24,7 @@ export default function RootLayout({
             <div className="flex flex-col items-center max-w-xs">
               <Logo size={100} color="#ffffff" />
               <h1 className="text-white text-4xl font-semibold">Admin Panel</h1>
-              <p className="text-center text-gray-400 mt-2">
+              <p className="text-center text-white mt-2">
                 Welcome to the Admin Panel. Please Sign in to Continue.
               </p>
             </div>
