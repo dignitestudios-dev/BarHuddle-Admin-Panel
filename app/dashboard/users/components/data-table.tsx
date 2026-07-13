@@ -50,6 +50,8 @@ interface DataTableProps {
   pageSize: number;
   loading: boolean;
   filter: string;
+  searchQuery: string;
+  onSearchQueryChange: (query: string) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onFilterChange: (filter: string) => void;
@@ -66,6 +68,8 @@ export function DataTable({
   pageSize,
   loading,
   filter,
+  searchQuery,
+  onSearchQueryChange,
   onPageChange,
   onPageSizeChange,
   onFilterChange,
@@ -73,8 +77,6 @@ export function DataTable({
   onUnbanUser,
   onDeleteUser,
 }: DataTableProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-
   // Get initials for Avatar fallback
   const getInitials = (name: string | null, email: string) => {
     if (name) {
@@ -102,13 +104,8 @@ export function DataTable({
     }
   };
 
-  // Client-side search filtering on current page
-  const displayedUsers = users.filter((user) => {
-    const q = searchQuery.toLowerCase();
-    const nameMatch = user.name?.toLowerCase().includes(q) || false;
-    const emailMatch = user.email.toLowerCase().includes(q);
-    return nameMatch || emailMatch;
-  });
+  // Backend is doing all searching and filtering, so we display the users array directly
+  const displayedUsers = users;
 
   return (
     <div className="w-full space-y-4">
@@ -129,9 +126,9 @@ export function DataTable({
           <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
           <Input
             id="user-search"
-            placeholder="Search current page by name or email..."
+            placeholder="Search by name or email..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => onSearchQueryChange(e.target.value)}
             className="pl-9"
           />
         </div>

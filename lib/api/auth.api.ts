@@ -150,9 +150,17 @@ export interface UsersResponse {
 export const getUsersApi = async (
   page = 1,
   limit = 10,
-  filter = "all"
+  filter = "all",
+  search = ""
 ): Promise<UsersResponse> => {
-  const response = await API.get(`/users?page=${page}&limit=${limit}&filter=${filter}`);
+  const params: any = { page, limit };
+  if (filter && filter !== "all") {
+    params.filter = filter;
+  }
+  if (search) {
+    params.search = search;
+  }
+  const response = await API.get('/users', { params });
   return response.data;
 };
 
@@ -286,9 +294,19 @@ export interface ReportsResponse {
 
 export const getReportsApi = async (
   page = 1,
-  limit = 10
+  limit = 10,
+  search = "",
+  status = "",
+  action = "",
+  type = ""
 ): Promise<ReportsResponse> => {
-  const response = await API.get(`/reports?page=${page}&limit=${limit}`);
+  const params: any = { page, limit };
+  if (search) params.search = search;
+  if (status) params.status = status;
+  if (action) params.action = action;
+  if (type) params.type = type;
+
+  const response = await API.get('/reports', { params });
   return response.data;
 };
 

@@ -34,7 +34,9 @@ API.interceptors.response.use(
   (error) => {
     if (error?.response?.status === 401) {
       localStorage.removeItem("authToken"); // Remove token if unauthorized
-      window.location.href = "/auth/login"; // Redirect to login page
+      if (!window.location.pathname.includes("auth")) {
+        window.location.href = "/auth/login"; 
+      }
     }
     console.log(error);
     console.log("API Error:", error.response?.data || error);

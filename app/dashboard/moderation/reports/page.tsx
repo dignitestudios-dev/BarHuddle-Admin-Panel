@@ -61,6 +61,7 @@ export default function ReportsPage() {
 
   // Search & filter states
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
 
@@ -72,11 +73,39 @@ export default function ReportsPage() {
   const [reportToResolve, setReportToResolve] = useState<AdminReport | null>(null);
   const [resolveActionType, setResolveActionType] = useState<"accept" | "reject" | null>(null);
 
+  // Debounce the search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  // Reset pagination to page 1 on filter/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, statusFilter, typeFilter]);
+
   const fetchReports = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const response = await getReportsApi(currentPage, pageSize);
+      // Map statusFilter to backend status & action query parameters
+      const statusParam = statusFilter === "pending" ? "pending" : statusFilter === "resolved" ? "resolve" : "";
+      const actionParam = statusFilter === "pending" ? "pending" : "";
+      const typeParam = typeFilter === "all" ? "" : typeFilter;
+
+      const response = await getReportsApi(
+        currentPage,
+        pageSize,
+        debouncedSearchQuery,
+        statusParam,
+        actionParam,
+        typeParam
+      );
       if (response?.success) {
         setReports(response.data || []);
         if (response.pagination) {
@@ -89,12 +118,12 @@ export default function ReportsPage() {
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
-          "Failed to load moderation reports from the server. Ensure you have admin access."
+        "Failed to load moderation reports from the server. Ensure you have admin access."
       );
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, debouncedSearchQuery, statusFilter, typeFilter]);
 
   useEffect(() => {
     fetchReports();
@@ -150,30 +179,8 @@ export default function ReportsPage() {
     }
   };
 
-  // Client-side filtering on current page
-  const displayedReports = useMemo(() => {
-    return reports.filter((r) => {
-      const q = searchQuery.toLowerCase();
-      const reportedName = r.reported?.name?.toLowerCase() || "";
-      const reporterName = r.reportedBy?.name?.toLowerCase() || "";
-      const reasonText = r.reason?.toLowerCase() || "";
-
-      const matchSearch =
-        searchQuery === "" ||
-        reportedName.includes(q) ||
-        reporterName.includes(q) ||
-        reasonText.includes(q);
-
-      const matchStatus =
-        statusFilter === "all" ||
-        (statusFilter === "pending" && r.status?.toLowerCase() === "pending") ||
-        (statusFilter === "resolved" && r.status?.toLowerCase() === "resolve");
-
-      const matchType = typeFilter === "all" || r.type?.toLowerCase() === typeFilter;
-
-      return matchSearch && matchStatus && matchType;
-    });
-  }, [reports, searchQuery, statusFilter, typeFilter]);
+  // Backend is doing all searching and filtering, so we display the reports directly
+  const displayedReports = reports;
 
   const handleOpenView = async (report: AdminReport) => {
     setSelectedReport(report);
@@ -208,11 +215,11 @@ export default function ReportsPage() {
           prev.map((r) =>
             r._id === reportId
               ? {
-                  ...r,
-                  status: "resolve",
-                  action: payload.action,
-                  updatedAt: new Date().toISOString(),
-                }
+                ...r,
+                status: "resolve",
+                action: payload.action,
+                updatedAt: new Date().toISOString(),
+              }
               : r
           )
         );
@@ -268,25 +275,19 @@ export default function ReportsPage() {
       </div>
 
       {/* Filters */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="flex items-center  gap-4">
         <div className="relative">
           <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
           <Input
-            placeholder="Search reported name or reason..."
+            placeholder="Search with reason..."
             value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="pl-9"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 w-[400px]"
           />
         </div>
         <Select
           value={statusFilter}
-          onValueChange={(v) => {
-            setStatusFilter(v);
-            setCurrentPage(1);
-          }}
+          onValueChange={setStatusFilter}
         >
           <SelectTrigger className="cursor-pointer">
             <SelectValue placeholder="All Statuses" />
@@ -299,10 +300,7 @@ export default function ReportsPage() {
         </Select>
         <Select
           value={typeFilter}
-          onValueChange={(v) => {
-            setTypeFilter(v);
-            setCurrentPage(1);
-          }}
+          onValueChange={setTypeFilter}
         >
           <SelectTrigger className="cursor-pointer">
             <SelectValue placeholder="All Types" />
@@ -375,10 +373,10 @@ export default function ReportsPage() {
                   <TableCell className="text-xs text-muted-foreground">
                     {report.createdAt
                       ? new Date(report.createdAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })
                       : "—"}
                   </TableCell>
                   <TableCell>

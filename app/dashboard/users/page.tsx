@@ -30,10 +30,28 @@ export default function UsersPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [filter, setFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
   // Ban Dialog state
   const [banDialogOpen, setBanDialogOpen] = useState(false);
   const [userToBan, setUserToBan] = useState<{ id: string; name: string } | null>(null);
+
+  // Debounce the search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  // Reset to first page when search query or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, filter]);
 
   const fetchStats = async () => {
     try {
@@ -49,7 +67,7 @@ export default function UsersPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await getUsersApi(currentPage, pageSize, filter);
+      const response = await getUsersApi(currentPage, pageSize, filter, debouncedSearchQuery);
       if (response?.success) {
         setUsers(response.data || []);
         if (response.pagination) {
@@ -67,7 +85,7 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize, filter]);
+  }, [currentPage, pageSize, filter, debouncedSearchQuery]);
 
   // Load both stats and list on mount & when params update
   useEffect(() => {
@@ -187,6 +205,8 @@ export default function UsersPage() {
           pageSize={pageSize}
           loading={loading}
           filter={filter}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
           onFilterChange={handleFilterChange}

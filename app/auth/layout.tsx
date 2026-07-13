@@ -17,7 +17,7 @@ export default function RootLayout({
           {children}
         </div>
         {/* Right side - Brand */}
-        <div className="lg:w-1/2 w-full h-full bg-slate-600 lg:grid items-center hidden">
+        <div className="lg:w-1/2 w-full h-full bg-[#8468a3f7] lg:grid items-center hidden">
           <div className="relative items-center justify-center  flex z-1">
             {/* <!-- ===== Common Grid Shape Start ===== --> */}
             <GridShape />
