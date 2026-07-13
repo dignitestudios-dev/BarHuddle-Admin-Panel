@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const baseURL = "https://api.dev.barhuddle.com/admin";
+export const baseURL = "https://api.staging.barhuddle.com/admin";
 
 const headers = {
   "Content-Type": "application/json",
