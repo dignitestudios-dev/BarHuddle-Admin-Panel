@@ -84,7 +84,7 @@ export function ViewReportDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+        <DialogHeader className="p-2">
           <div className="flex items-center justify-between mt-1">
             <DialogTitle className="flex items-center gap-2">
               <Flag className="size-5 text-primary" />

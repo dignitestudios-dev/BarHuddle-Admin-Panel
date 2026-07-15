@@ -239,10 +239,10 @@ export function DataTable({
                   <TableCell className="text-xs text-muted-foreground">
                     {user.createdAt
                       ? new Date(user.createdAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })
                       : "—"}
                   </TableCell>
                   <TableCell>
@@ -255,7 +255,7 @@ export function DataTable({
                           className="h-8 w-8 cursor-pointer"
                           title="View Profile"
                         >
-                          <UserIcon className="size-4" />
+                          <UserIcon className="size-4 " />
                           <span className="sr-only">View profile</span>
                         </Button>
                       </Link>
@@ -268,20 +268,20 @@ export function DataTable({
                             size="icon"
                             className="h-8 w-8 cursor-pointer"
                           >
-                            <EllipsisVertical className="size-4" />
+                            <EllipsisVertical className="size-4 " />
                             <span className="sr-only">More actions</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild className="cursor-pointer">
                             <Link href={`/dashboard/users/${user._id}`}>
-                              <Eye className="mr-2 size-4" />
+                              <Eye className="mr-2 size-4 hover:text-white" />
                               View Details
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild className="cursor-pointer">
                             <Link href={`/dashboard/users/${user._id}/activity`}>
-                              <Activity className="mr-2 size-4" />
+                              <Activity className="mr-2 size-4 hover:text-white" />
                               Activity Logs
                             </Link>
                           </DropdownMenuItem>
@@ -291,15 +291,15 @@ export function DataTable({
                               className="cursor-pointer text-green-600 focus:text-green-600 font-medium"
                               onClick={() => onUnbanUser(user._id)}
                             >
-                              <CheckCircle2 className="mr-2 size-4" />
+                              <CheckCircle2 className="mr-2 size-4 hover:text-white" />
                               Activate User
                             </DropdownMenuItem>
                           ) : (
                             <DropdownMenuItem
-                              className="cursor-pointer text-red-600 focus:text-red-600 font-medium"
+                              className="cursor-pointer hover:text-white text-red-600  font-medium"
                               onClick={() => onBanUser(user._id)}
                             >
-                              <Ban className="mr-2 size-4" />
+                              <Ban className="mr-2 size-4 hover:text-white" />
                               Deactivate User
                             </DropdownMenuItem>
                           )}

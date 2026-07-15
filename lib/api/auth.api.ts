@@ -209,15 +209,38 @@ export const createUserApi = async (
 };
 
 // ─── User Activity ────────────────────────────────────────────────────────────
-export interface AccountActivityItem {
-  _id: string;
-  deviceModel: string;
-  ipAddress: string;
-  userAgent: string;
-  createdAt: string;
-  updatedAt: string;
+export type ActivityFilter = "history" | "friends" | "message";
+
+export interface ActivityPagination {
+  itemsPerPage: number;
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
 }
 
+// history filter
+export interface AttendanceItem {
+  _id: string;
+  venue: {
+    _id: string;
+    placeId: string;
+    name: string;
+    address: string;
+  };
+  venueName: string;
+  isActive: boolean;
+  joinAt: string;
+  leftAt: string | null;
+  checkInTime: string;
+  checkoutTime: string | null;
+}
+
+export interface HistoryActivityResponse {
+  data: AttendanceItem[];
+  pagination: ActivityPagination;
+}
+
+// friends filter
 export interface FriendItem {
   _id: string;
   name: string | null;
@@ -225,30 +248,50 @@ export interface FriendItem {
   profilePicture: UserProfilePicture | null;
   dob: string | null;
   gender: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
-export interface UserActivityData {
-  attendanceHistory: any[];
-  friends: FriendItem[];
-  messagingActivity: {
-    totalMessages: number;
-    recentMessages: any[];
-  };
-  accountActivity: AccountActivityItem[];
-  pagination: {
-    itemsPerPage: number;
-    currentPage: number;
-    totalItems: number;
-    totalPages: number;
+export interface FriendsActivityResponse {
+  data: FriendItem[];
+  totalFriends: number;
+  pagination: ActivityPagination;
+}
+
+// message filter
+export interface MessageItem {
+  _id: string;
+  content: string;
+  type: string;
+  timestamp: string;
+  createdAt: string;
+  chatRoom: {
+    _id: string;
+    name: string | null;
+    isGroup: boolean;
   };
 }
+
+export interface MessagesActivityResponse {
+  data: MessageItem[];
+  totalMessages: number;
+  pagination: ActivityPagination;
+}
+
+export type ActivityResponseData =
+  | HistoryActivityResponse
+  | FriendsActivityResponse
+  | MessagesActivityResponse;
 
 export const getUserActivityApi = async (
   id: string,
+  filter: ActivityFilter = "history",
   page = 1,
-  limit = 10
-): Promise<{ success: boolean; message: string; data: UserActivityData }> => {
-  const response = await API.get(`/users/${id}/activity?page=${page}&limit=${limit}`);
+  limit = 20
+): Promise<{ success: boolean; message: string; data: ActivityResponseData }> => {
+  const response = await API.get(
+    `/users/${id}/activity?filter=${filter}&page=${page}&limit=${limit}`
+  );
   return response.data;
 };
 

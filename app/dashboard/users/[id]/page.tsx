@@ -61,7 +61,7 @@ export default function UserProfilePage({
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
-          "Failed to load user profile. Make sure the user ID is correct and you have permission."
+        "Failed to load user profile. Make sure the user ID is correct and you have permission."
       );
     } finally {
       setLoading(false);
@@ -266,11 +266,10 @@ export default function UserProfilePage({
                 variant="outline"
                 disabled={actionLoading}
                 onClick={handleDeactivateToggle}
-                className={`w-full cursor-pointer ${
-                  user.isDeactivatedByAdmin
-                    ? "text-green-600 border-green-200 hover:bg-green-50"
-                    : "text-orange-600 border-orange-200 hover:bg-orange-50"
-                }`}
+                className={`w-full cursor-pointer ${user.isDeactivatedByAdmin
+                  ? "text-green-600 border-green-200 hover:bg-green-50 hover:text-green-600!"
+                  : "text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-red-600!"
+                  }`}
               >
                 {user.isDeactivatedByAdmin ? (
                   <>
