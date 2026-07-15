@@ -125,15 +125,6 @@ export default function UserActivityPage({
             totalPages: d.pagination.totalPages,
             totalItems: d.pagination.totalItems,
           });
-        } else if (filter === "message") {
-          const d = res.data as MessagesActivityResponse;
-          setMessagesData(d.data ?? []);
-          setTotalMessages(d.totalMessages ?? 0);
-          setMessagesPagination({
-            currentPage: d.pagination.currentPage,
-            totalPages: d.pagination.totalPages,
-            totalItems: d.pagination.totalItems,
-          });
         }
       } catch (err: any) {
         setError(
@@ -152,8 +143,8 @@ export default function UserActivityPage({
       activeTab === "history"
         ? historyPagination.currentPage
         : activeTab === "friends"
-        ? friendsPagination.currentPage
-        : messagesPagination.currentPage;
+          ? friendsPagination.currentPage
+          : messagesPagination.currentPage;
 
     fetchActivity(activeTab, page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -169,8 +160,8 @@ export default function UserActivityPage({
       activeTab === "history"
         ? historyPagination.currentPage
         : activeTab === "friends"
-        ? friendsPagination.currentPage
-        : messagesPagination.currentPage;
+          ? friendsPagination.currentPage
+          : messagesPagination.currentPage;
     fetchActivity(activeTab, page);
   };
 
@@ -338,7 +329,7 @@ export default function UserActivityPage({
           </CardContent>
         </Card>
 
-        <Card className="border shadow-sm">
+        {/* <Card className="border shadow-sm">
           <CardContent className="pt-6 flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-xs font-semibold text-muted-foreground uppercase">Messages</p>
@@ -349,7 +340,7 @@ export default function UserActivityPage({
               <MessageSquare className="size-5" />
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Error banner */}
@@ -361,10 +352,10 @@ export default function UserActivityPage({
 
       {/* Main Tabs — defaultValue matches the default filter "history" */}
       <Tabs defaultValue="history" onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:max-w-md">
+        <TabsList className="grid w-full grid-cols-2 lg:max-w-md">
           <TabsTrigger value="history">Attendance History</TabsTrigger>
           <TabsTrigger value="friends">Friends List</TabsTrigger>
-          <TabsTrigger value="message">Messages</TabsTrigger>
+          {/* <TabsTrigger value="message">Messages</TabsTrigger> */}
         </TabsList>
 
         {/* ── Attendance History Tab ── */}
