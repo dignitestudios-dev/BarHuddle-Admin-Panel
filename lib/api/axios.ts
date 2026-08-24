@@ -2,7 +2,7 @@ import axios from "axios";
 import { store } from "../store";
 import { logout } from "../slices/authSlice";
 
-export const baseURL = "https://api.staging.barhuddle.com/admin";
+export const baseURL = "https://api.barhuddle.com/admin";
 
 const headers = {
   "Content-Type": "application/json",
