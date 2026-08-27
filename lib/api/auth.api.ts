@@ -374,3 +374,82 @@ export const updateReportApi = async (
   const response = await API.patch(`/reports/${id}`, payload);
   return response.data;
 };
+
+// ─── Venue Owner Claims Management ───────────────────────────────────────────
+export interface VenueClaimItem {
+  _id: string;
+  contactName?: string;
+  contactEmail?: string;
+  name?: string;
+  email?: string;
+  venue?: {
+    _id: string;
+    placeId?: string;
+    name: string;
+    address?: string;
+    coverImage?: string;
+  } | null;
+  venueId?: string | {
+    _id: string;
+    name: string;
+    address?: string;
+    placeId?: string;
+  };
+  venueName?: string;
+  venueAddress?: string;
+  user?: {
+    _id: string;
+    name?: string;
+    email?: string;
+    profilePicture?: string | any;
+  } | null;
+  userId?: string;
+  ownershipProof?: string | {
+    _id?: string;
+    location?: string;
+    url?: string;
+    mimetype?: string;
+    size?: number;
+  } | null;
+  status: "pending" | "approved" | "revoked" | string;
+  claimedAt?: string;
+  reviewedAt?: string | null;
+  reviewedBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+}
+
+export interface VenueClaimsResponse {
+  success: boolean;
+  message: string;
+  data: VenueClaimItem[];
+  pagination?: {
+    itemsPerPage: number;
+    currentPage: number;
+    totalItems: number;
+    totalPages: number;
+  };
+}
+
+export const getVenueClaimsApi = async (
+  page = 1,
+  limit = 10,
+  status = "pending"
+): Promise<VenueClaimsResponse> => {
+  const params: any = { page, limit };
+  if (status && status !== "all") {
+    params.status = status;
+  }
+  const response = await API.get('/venue-owners', { params });
+  return response.data;
+};
+
+export const updateVenueClaimStatusApi = async (
+  claimId: string,
+  status: "approved" | "revoked"
+): Promise<any> => {
+  const response = await API.put(`/venue-owners/${claimId}`, { status });
+  return response.data;
+};
+

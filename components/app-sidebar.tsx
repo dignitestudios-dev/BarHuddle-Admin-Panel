@@ -7,6 +7,7 @@ import {
   Flag,
   ShieldAlert,
   Settings2,
+  Building2,
 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
@@ -49,6 +50,16 @@ const data = {
           title: "Users",
           url: "/dashboard/users",
           icon: Users,
+        },
+      ],
+    },
+    {
+      label: "Venue Management",
+      items: [
+        {
+          title: "Bar Claims",
+          url: "/dashboard/venue-claims",
+          icon: Building2,
         },
       ],
     },

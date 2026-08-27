@@ -2,7 +2,8 @@ import axios from "axios";
 import { store } from "../store";
 import { logout } from "../slices/authSlice";
 
-export const baseURL = "https://api.barhuddle.com/admin";
+export const baseURL =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.barhuddle.com/admin";
 
 const headers = {
   "Content-Type": "application/json",
@@ -21,13 +22,14 @@ export const API = axios.create({
 // Request Interceptor
 API.interceptors.request.use(
   (config) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem("authToken") : null; // Retrieve token safely from storage
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("authToken") : null; // Retrieve token safely from storage
     if (token) {
       config.headers.authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response Interceptor
@@ -35,14 +37,16 @@ API.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error?.response?.status === 401) {
-      store.dispatch(logout()); 
-      if (typeof window !== 'undefined' && !window.location.pathname.includes("auth")) {
-        window.location.href = "/auth/login"; 
+      store.dispatch(logout());
+      if (
+        typeof window !== "undefined" &&
+        !window.location.pathname.includes("auth")
+      ) {
+        window.location.href = "/auth/login";
       }
     }
     console.log(error);
     console.log("API Error:", error.response?.data || error);
     return Promise.reject(error);
-  }
+  },
 );
-
