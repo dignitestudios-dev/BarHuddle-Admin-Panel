@@ -235,12 +235,12 @@ export default function Dashboard() {
                   value={data.analytics.venueVisitsThisWeek}
                   color="text-orange-600 bg-orange-50"
                 />
-                <AnalyticItem
+                {/* <AnalyticItem
                   icon={MessageSquare}
                   label="Messages Sent"
                   value={data.analytics.messagesThisWeek}
                   color="text-green-600 bg-green-50"
-                />
+                /> */}
                 <AnalyticItem
                   icon={UserRoundPlus}
                   label="Friend Requests"

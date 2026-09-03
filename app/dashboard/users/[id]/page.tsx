@@ -210,18 +210,24 @@ export default function UserProfilePage({
         {/* Profile Card */}
         <Card className="lg:col-span-1 border shadow-sm">
           <CardContent className="flex flex-col items-center gap-5 pt-8 text-center">
-            <Avatar className="h-24 w-24 border shadow-sm">
-              {user.profilePicture?.location && (
-                <AvatarImage
-                  src={user.profilePicture.location}
-                  alt={user.name || user.email}
-                  className="object-cover"
-                />
-              )}
-              <AvatarFallback className="text-2xl font-bold">
-                {getInitials(user.name, user.email)}
-              </AvatarFallback>
-            </Avatar>
+            {(() => {
+              const pic = user.profilePicture;
+              const avatarSrc = typeof pic === "string" ? pic : pic?.location;
+              return (
+                <Avatar className="h-24 w-24 border shadow-sm">
+                  {avatarSrc && (
+                    <AvatarImage
+                      src={avatarSrc}
+                      alt={user.name || user.email}
+                      className="object-cover"
+                    />
+                  )}
+                  <AvatarFallback className="text-2xl font-bold">
+                    {getInitials(user.name, user.email)}
+                  </AvatarFallback>
+                </Avatar>
+              );
+            })()}
             <div>
               <h2 className="text-xl font-bold">{user.name || "No Name"}</h2>
               <p className="text-muted-foreground text-sm">{user.email}</p>

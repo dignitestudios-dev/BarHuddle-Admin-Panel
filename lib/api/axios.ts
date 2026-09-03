@@ -3,7 +3,7 @@ import { store } from "../store";
 import { logout } from "../slices/authSlice";
 
 export const baseURL =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.barhuddle.com/admin";
+  process.env.NEXT_PUBLIC_API_URL || "https://api.staging.barhuddle.com/admin";
 
 const headers = {
   "Content-Type": "application/json",

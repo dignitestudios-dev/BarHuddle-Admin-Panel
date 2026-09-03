@@ -28,6 +28,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { LightboxProofViewer } from "./lightbox-proof-viewer";
+import { ImageWithFallback, DUMMY_IMAGE } from "@/components/ui/image-with-fallback";
 
 interface ViewClaimDialogProps {
   open: boolean;
@@ -127,19 +128,14 @@ export function ViewClaimDialog({
                 Claimed Venue Details
               </span>
               <div className="flex items-start gap-3 rounded-lg border p-3.5 bg-muted/10">
-                {coverImage ? (
-                  <div className="size-14 rounded-md overflow-hidden border shrink-0 bg-muted">
-                    <img
-                      src={coverImage}
-                      alt={venueName}
-                      className="size-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="rounded-md bg-orange-100 p-2.5 text-orange-700 shrink-0 mt-0.5">
-                    <Building2 className="size-5" />
-                  </div>
-                )}
+                <div className="size-14 rounded-md overflow-hidden border shrink-0 bg-muted">
+                  <ImageWithFallback
+                    src={coverImage || DUMMY_IMAGE}
+                    alt={venueName}
+                    fallbackSrc={DUMMY_IMAGE}
+                    className="size-full object-cover"
+                  />
+                </div>
                 <div className="flex flex-col flex-1 min-w-0">
                   <span className="font-semibold text-foreground text-base break-words">
                     {venueName}
@@ -281,9 +277,10 @@ export function ViewClaimDialog({
                       onClick={() => setLightboxOpen(true)}
                       title="Click to view in full screen"
                     >
-                      <img
+                      <ImageWithFallback
                         src={proofUrl}
                         alt="Proof of ownership"
+                        fallbackSrc={DUMMY_IMAGE}
                         className="max-h-64 object-contain rounded-md"
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-medium">
