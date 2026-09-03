@@ -180,18 +180,24 @@ export function DataTable({
                 >
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                        {user.profilePicture?.location && (
-                          <AvatarImage
-                            src={user.profilePicture.location}
-                            alt={user.name || user.email}
-                            className="object-cover"
-                          />
-                        )}
-                        <AvatarFallback className="text-xs font-semibold">
-                          {getInitials(user.name, user.email)}
-                        </AvatarFallback>
-                      </Avatar>
+                    {(() => {
+                      const pic = user.profilePicture;
+                      const avatarSrc = typeof pic === "string" ? pic : pic?.location;
+                      return (
+                        <Avatar className="h-9 w-9">
+                          {avatarSrc && (
+                            <AvatarImage
+                              src={avatarSrc}
+                              alt={user.name || user.email}
+                              className="object-cover"
+                            />
+                          )}
+                          <AvatarFallback className="text-xs font-semibold">
+                            {getInitials(user.name, user.email)}
+                          </AvatarFallback>
+                        </Avatar>
+                      );
+                    })()}
                       <div className="flex flex-col">
                         <span className="font-medium text-foreground">
                           {user.name || "No Name"}

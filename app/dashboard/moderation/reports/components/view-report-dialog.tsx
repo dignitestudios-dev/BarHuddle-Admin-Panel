@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ImageWithFallback, DUMMY_IMAGE } from "@/components/ui/image-with-fallback";
 import { type AdminReport } from "@/lib/api/auth.api";
 import {
   User2,
@@ -108,18 +109,24 @@ export function ViewReportDialog({
             <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/10">
               {report.reportedBy ? (
                 <>
-                  <Avatar className="h-8 w-8">
-                    {report.reportedBy.profilePicture?.location && (
-                      <AvatarImage
-                        src={report.reportedBy.profilePicture.location}
-                        alt={report.reportedBy.name || report.reportedBy.email}
-                        className="object-cover"
-                      />
-                    )}
-                    <AvatarFallback className="text-xs font-semibold">
-                      {getInitials(report.reportedBy.name, report.reportedBy.email)}
-                    </AvatarFallback>
-                  </Avatar>
+                  {(() => {
+                    const pic = report.reportedBy.profilePicture;
+                    const avatarSrc = typeof pic === "string" ? pic : pic?.location;
+                    return (
+                      <Avatar className="h-8 w-8">
+                        {avatarSrc && (
+                          <AvatarImage
+                            src={avatarSrc}
+                            alt={report.reportedBy.name || report.reportedBy.email}
+                            className="object-cover"
+                          />
+                        )}
+                        <AvatarFallback className="text-xs font-semibold">
+                          {getInitials(report.reportedBy.name, report.reportedBy.email)}
+                        </AvatarFallback>
+                      </Avatar>
+                    );
+                  })()}
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold">
                       {report.reportedBy.name || "No Name"}
@@ -144,9 +151,31 @@ export function ViewReportDialog({
               {report.reported ? (
                 <>
                   {report.type === "venue" ? (
-                    <MapPin className="size-8 text-orange-600 shrink-0" />
+                    <div className="size-10 rounded-md overflow-hidden border shrink-0 bg-muted">
+                      <ImageWithFallback
+                        src={(report.reported as any)?.coverImage || DUMMY_IMAGE}
+                        alt={report.reported.name || "Venue"}
+                        fallbackSrc={DUMMY_IMAGE}
+                        className="size-full object-cover"
+                      />
+                    </div>
                   ) : (
-                    <User2 className="size-8 text-blue-600 shrink-0" />
+                    <Avatar className="h-10 w-10 shrink-0">
+                      {(() => {
+                        const pic = (report.reported as any)?.profilePicture;
+                        const avatarSrc = typeof pic === "string" ? pic : pic?.location;
+                        return avatarSrc ? (
+                          <AvatarImage
+                            src={avatarSrc}
+                            alt={report.reported.name || report.reported.email || "User"}
+                            className="object-cover"
+                          />
+                        ) : null;
+                      })()}
+                      <AvatarFallback className="text-xs font-semibold">
+                        {getInitials(report.reported.name, report.reported.email || "")}
+                      </AvatarFallback>
+                    </Avatar>
                   )}
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold">

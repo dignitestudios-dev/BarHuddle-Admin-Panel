@@ -53,6 +53,7 @@ import {
 import { ViewClaimDialog } from "./components/view-claim-dialog";
 import { ClaimActionDialog } from "./components/claim-action-dialog";
 import { LightboxProofViewer } from "./components/lightbox-proof-viewer";
+import { ImageWithFallback, DUMMY_IMAGE } from "@/components/ui/image-with-fallback";
 
 
 export default function VenueClaimsPage() {
@@ -388,19 +389,14 @@ export default function VenueClaimsPage() {
                     {/* Venue Details */}
                     <TableCell>
                       <div className="flex items-start gap-2.5">
-                        {coverImage ? (
-                          <div className="size-9 rounded-md overflow-hidden border shrink-0 bg-muted mt-0.5">
-                            <img
-                              src={coverImage}
-                              alt={venueName}
-                              className="size-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="rounded-md bg-orange-50 p-2 text-orange-600 mt-0.5 shrink-0">
-                            <Building2 className="size-4" />
-                          </div>
-                        )}
+                        <div className="size-9 rounded-md overflow-hidden border shrink-0 bg-muted mt-0.5">
+                          <ImageWithFallback
+                            src={coverImage || DUMMY_IMAGE}
+                            alt={venueName}
+                            fallbackSrc={DUMMY_IMAGE}
+                            className="size-full object-cover"
+                          />
+                        </div>
                         <div className="flex flex-col min-w-0 max-w-[260px]">
                           <span
                             className="font-semibold text-foreground truncate"

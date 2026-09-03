@@ -477,18 +477,24 @@ export default function UserActivityPage({
                             >
                               <TableCell>
                                 <div className="flex items-center gap-3">
-                                  <Avatar className="h-8 w-8">
-                                    {friend.profilePicture?.location && (
-                                      <AvatarImage
-                                        src={friend.profilePicture.location}
-                                        alt={friend.name || friend.email}
-                                        className="object-cover"
-                                      />
-                                    )}
-                                    <AvatarFallback className="text-xs font-semibold">
-                                      {getInitials(friend.name, friend.email)}
-                                    </AvatarFallback>
-                                  </Avatar>
+                                  {(() => {
+                                    const pic = friend.profilePicture;
+                                    const avatarSrc = typeof pic === "string" ? pic : pic?.location;
+                                    return (
+                                      <Avatar className="h-8 w-8">
+                                        {avatarSrc && (
+                                          <AvatarImage
+                                            src={avatarSrc}
+                                            alt={friend.name || friend.email}
+                                            className="object-cover"
+                                          />
+                                        )}
+                                        <AvatarFallback className="text-xs font-semibold">
+                                          {getInitials(friend.name, friend.email)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    );
+                                  })()}
                                   <div className="flex flex-col">
                                     <span className="text-sm font-semibold">{friend.name || "No Name"}</span>
                                     <span className="text-xs text-muted-foreground">{friend.email}</span>
