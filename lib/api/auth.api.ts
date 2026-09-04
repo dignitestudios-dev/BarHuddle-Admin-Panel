@@ -435,11 +435,15 @@ export interface VenueClaimsResponse {
 export const getVenueClaimsApi = async (
   page = 1,
   limit = 10,
-  status = "pending"
+  status = "pending",
+  userId?: string
 ): Promise<VenueClaimsResponse> => {
   const params: any = { page, limit };
   if (status && status !== "all") {
     params.status = status;
+  }
+  if (userId) {
+    params.userId = userId;
   }
   const response = await API.get('/venue-owners', { params });
   return response.data;
