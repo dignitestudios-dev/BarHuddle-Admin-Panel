@@ -192,6 +192,8 @@ export default function UserProfilePage({
     }
   };
 
+  const isBarOwner = user.role?.toLowerCase().replace(/[\s-]/g, "_") === "bar_owner";
+
   return (
     <div className="flex flex-col gap-6">
       {/* Breadcrumb */}
@@ -353,29 +355,33 @@ export default function UserProfilePage({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-pink-50 p-2">
-                  <CalendarDays className="size-4 text-pink-600" />
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs font-medium">Date of Birth</p>
-                  <p className="text-sm font-semibold text-foreground">
-                    {formattedDate(user.dob)}
-                  </p>
-                </div>
-              </div>
+              {!isBarOwner && (
+                <>
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-lg bg-pink-50 p-2">
+                      <CalendarDays className="size-4 text-pink-600" />
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs font-medium">Date of Birth</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {formattedDate(user.dob)}
+                      </p>
+                    </div>
+                  </div>
 
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-teal-50 p-2">
-                  <UserIcon className="size-4 text-teal-600" />
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs font-medium">Gender</p>
-                  <p className="text-sm font-semibold text-foreground">
-                    {getGenderLabel(user.gender)}
-                  </p>
-                </div>
-              </div>
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-lg bg-teal-50 p-2">
+                      <UserIcon className="size-4 text-teal-600" />
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs font-medium">Gender</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {getGenderLabel(user.gender)}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 

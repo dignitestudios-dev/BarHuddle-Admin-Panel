@@ -92,8 +92,7 @@ export function ClaimActionDialog({
             <div className="flex items-start gap-2 text-xs text-muted-foreground">
               <User className="size-3.5 text-blue-600 shrink-0 mt-0.5" />
               <span className="break-words flex-1">
-                Claimant: <strong className="text-foreground">{claimantName}</strong> (
-                <span className="break-all">{claim.email}</span>)
+                Claimant: <strong className="text-foreground">{claimantName}</strong> 
               </span>
             </div>
           </div>

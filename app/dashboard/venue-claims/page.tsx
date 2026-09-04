@@ -44,7 +44,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   getVenueClaimsApi,
   updateVenueClaimStatusApi,
@@ -185,15 +184,6 @@ export default function VenueClaimsPage() {
       default:
         return "text-amber-700 bg-amber-50 border-amber-200";
     }
-  };
-
-  const getInitials = (name: string | null | undefined, email?: string) => {
-    if (name) {
-      const parts = name.trim().split(/\s+/);
-      if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-      return name.substring(0, 2).toUpperCase();
-    }
-    return (email || "VO").substring(0, 2).toUpperCase();
   };
 
   const formatDate = (iso: string | null | undefined) => {
@@ -337,7 +327,6 @@ export default function VenueClaimsPage() {
             <TableRow>
               <TableHead className="min-w-[220px]">Venue Information</TableHead>
               <TableHead className="min-w-[200px]">Contact Person</TableHead>
-              <TableHead className="min-w-[160px]">App Account</TableHead>
               <TableHead className="min-w-[150px]">Proof of Ownership</TableHead>
               <TableHead className="min-w-[110px]">Claimed Date</TableHead>
               <TableHead className="min-w-[100px]">Status</TableHead>
@@ -347,7 +336,7 @@ export default function VenueClaimsPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                   <div className="flex items-center justify-center gap-2">
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                     Loading venue claims...
@@ -364,9 +353,6 @@ export default function VenueClaimsPage() {
 
                 const contactName = claim.contactName || claim.name || "Not provided";
                 const contactEmail = claim.contactEmail || claim.email || "";
-
-                const userName = claim.user?.name || "Unlinked Account";
-                const userEmail = claim.user?.email || "";
 
                 // Resolve proof URL
                 let proofUrl: string | null = null;
@@ -435,27 +421,6 @@ export default function VenueClaimsPage() {
                             {contactEmail}
                           </a>
                         )}
-                      </div>
-                    </TableCell>
-
-                    {/* App Account User */}
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-7 w-7 shrink-0">
-                          <AvatarFallback className="text-[11px] font-semibold">
-                            {getInitials(userName, userEmail)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col min-w-0 max-w-[140px]">
-                          <span className="text-xs font-medium text-foreground truncate">
-                            {userName}
-                          </span>
-                          {userEmail && (
-                            <span className="text-[11px] text-muted-foreground truncate" title={userEmail}>
-                              {userEmail}
-                            </span>
-                          )}
-                        </div>
                       </div>
                     </TableCell>
 
@@ -604,7 +569,7 @@ export default function VenueClaimsPage() {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                   No venue owner claims found matching your criteria.
                 </TableCell>
               </TableRow>

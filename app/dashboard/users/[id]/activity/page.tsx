@@ -13,6 +13,10 @@ import {
   RefreshCcw,
   Building2,
   Clock,
+  User,
+  Image as ImageIcon,
+  FileText,
+  Maximize2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,9 +38,12 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
+import { LightboxProofViewer } from "@/app/dashboard/venue-claims/components/lightbox-proof-viewer";
 import {
   getUserActivityApi,
   getUserByIdApi,
+  getVenueClaimsApi,
   type AdminUser,
   type ActivityFilter,
   type HistoryActivityResponse,
@@ -45,9 +52,12 @@ import {
   type AttendanceItem,
   type FriendItem,
   type MessageItem,
+  type VenueClaimItem,
 } from "@/lib/api/auth.api";
 
 const PAGE_SIZE = 20;
+const DUMMY_IMAGE =
+  "https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=300&auto=format&fit=crop";
 
 export default function UserActivityPage({
   params,
@@ -60,6 +70,20 @@ export default function UserActivityPage({
   // User profile
   const [user, setUser] = useState<AdminUser | null>(null);
   const [userLoading, setUserLoading] = useState(true);
+
+  const isBarOwner = user?.role?.toLowerCase().replace(/[\s-]/g, "_") === "bar_owner";
+
+  // Claimed bars state (for bar owners)
+  const [claimedBars, setClaimedBars] = useState<VenueClaimItem[]>([]);
+  const [claimedBarsLoading, setClaimedBarsLoading] = useState(false);
+
+  // Fullscreen proof lightbox
+  const [fullscreenProof, setFullscreenProof] = useState<{
+    url: string | null;
+    venueName: string;
+    contactName?: string;
+  } | null>(null);
+  const [fullscreenProofOpen, setFullscreenProofOpen] = useState(false);
 
   // Active tab / filter — default is "history"
   const [activeTab, setActiveTab] = useState<ActivityFilter>("history");
@@ -97,7 +121,7 @@ export default function UserActivityPage({
     fetchUser();
   }, [id]);
 
-  // ── Fetch activity for the active filter ─────────────────────────
+  // ── Fetch activity for the active filter (regular users) ─────────
   const fetchActivity = useCallback(
     async (filter: ActivityFilter, page: number) => {
       setLoading(true);
@@ -137,8 +161,48 @@ export default function UserActivityPage({
     [id]
   );
 
-  // Fetch when tab or page changes
+  // ── Fetch claimed bars (for bar owners) ──────────────────────────
+  const fetchClaimedBars = useCallback(async () => {
+    if (!id) return;
+    setClaimedBarsLoading(true);
+    setError("");
+    try {
+      const res = await getVenueClaimsApi(1, 50, "all", id);
+      if (res?.success) {
+        const items = res.data || [];
+        const matched = items.filter((claim) => {
+          const claimUserId =
+            (typeof claim.user === "object" ? claim.user?._id : null) ||
+            (typeof claim.user === "string" ? claim.user : null) ||
+            claim.userId;
+          const claimEmail =
+            (typeof claim.user === "object" ? claim.user?.email : null) ||
+            claim.contactEmail ||
+            claim.email;
+
+          if (claimUserId && id) {
+            return String(claimUserId) === String(id);
+          }
+          if (claimEmail && user?.email) {
+            return claimEmail.trim().toLowerCase() === user.email.trim().toLowerCase();
+          }
+          return false;
+        });
+        setClaimedBars(matched);
+      } else {
+        setError(res?.message || "Failed to load claimed bars.");
+      }
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Failed to load claimed bars.");
+    } finally {
+      setClaimedBarsLoading(false);
+    }
+  }, [id, user?.email]);
+
+  // Fetch when tab or page changes (for regular users)
   useEffect(() => {
+    if (userLoading || !user || isBarOwner) return;
+
     const page =
       activeTab === "history"
         ? historyPagination.currentPage
@@ -147,8 +211,14 @@ export default function UserActivityPage({
           : messagesPagination.currentPage;
 
     fetchActivity(activeTab, page);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [activeTab, user, userLoading, isBarOwner, fetchActivity]);
+
+  // Fetch claimed bars when user is bar_owner
+  useEffect(() => {
+    if (!userLoading && user && isBarOwner) {
+      fetchClaimedBars();
+    }
+  }, [user, userLoading, isBarOwner, fetchClaimedBars]);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab as ActivityFilter);
@@ -156,13 +226,17 @@ export default function UserActivityPage({
   };
 
   const handleRefresh = () => {
-    const page =
-      activeTab === "history"
-        ? historyPagination.currentPage
-        : activeTab === "friends"
-          ? friendsPagination.currentPage
-          : messagesPagination.currentPage;
-    fetchActivity(activeTab, page);
+    if (isBarOwner) {
+      fetchClaimedBars();
+    } else {
+      const page =
+        activeTab === "history"
+          ? historyPagination.currentPage
+          : activeTab === "friends"
+            ? friendsPagination.currentPage
+            : messagesPagination.currentPage;
+      fetchActivity(activeTab, page);
+    }
   };
 
   const handlePageChange = (filter: ActivityFilter, page: number) => {
@@ -188,6 +262,32 @@ export default function UserActivityPage({
       return name.substring(0, 2).toUpperCase();
     }
     return email.substring(0, 2).toUpperCase();
+  };
+
+  const getClaimStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "approved":
+        return "text-green-700 bg-green-50 border-green-200";
+      case "revoked":
+      case "rejected":
+        return "text-red-700 bg-red-50 border-red-200";
+      case "pending":
+      default:
+        return "text-amber-700 bg-amber-50 border-amber-200";
+    }
+  };
+
+  const handleOpenFullscreen = (
+    proofUrl: string,
+    venueName: string,
+    contactName?: string
+  ) => {
+    setFullscreenProof({
+      url: proofUrl,
+      venueName,
+      contactName,
+    });
+    setFullscreenProofOpen(true);
   };
 
   // Filtered lists (local search)
@@ -293,55 +393,44 @@ export default function UserActivityPage({
           variant="outline"
           size="sm"
           onClick={handleRefresh}
-          disabled={loading}
+          disabled={loading || claimedBarsLoading}
           className="gap-2"
         >
-          <RefreshCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCcw className={`h-3.5 w-3.5 ${loading || claimedBarsLoading ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </div>
 
-      {/* Summary stat cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="border shadow-sm">
-          <CardContent className="pt-6 flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-muted-foreground uppercase">Venue Check-ins</p>
-              <div className="text-2xl font-bold">{historyPagination.totalItems}</div>
-              <p className="text-xs text-muted-foreground">Attendance records</p>
-            </div>
-            <div className="rounded-lg bg-orange-50 p-2 text-orange-600">
-              <MapPin className="size-5" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Summary stat cards (hidden if bar_owner) */}
+      {!isBarOwner && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card className="border shadow-sm">
+            <CardContent className="pt-6 flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase">Venue Check-ins</p>
+                <div className="text-2xl font-bold">{historyPagination.totalItems}</div>
+                <p className="text-xs text-muted-foreground">Attendance records</p>
+              </div>
+              <div className="rounded-lg bg-orange-50 p-2 text-orange-600">
+                <MapPin className="size-5" />
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card className="border shadow-sm">
-          <CardContent className="pt-6 flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-muted-foreground uppercase">Friends</p>
-              <div className="text-2xl font-bold">{friendsPagination.totalItems}</div>
-              <p className="text-xs text-muted-foreground">Active friendships</p>
-            </div>
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
-              <Users className="size-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* <Card className="border shadow-sm">
-          <CardContent className="pt-6 flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-muted-foreground uppercase">Messages</p>
-              <div className="text-2xl font-bold">{messagesPagination.totalItems}</div>
-              <p className="text-xs text-muted-foreground">Total messages</p>
-            </div>
-            <div className="rounded-lg bg-green-50 p-2 text-green-600">
-              <MessageSquare className="size-5" />
-            </div>
-          </CardContent>
-        </Card> */}
-      </div>
+          <Card className="border shadow-sm">
+            <CardContent className="pt-6 flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase">Friends</p>
+                <div className="text-2xl font-bold">{friendsPagination.totalItems}</div>
+                <p className="text-xs text-muted-foreground">Active friendships</p>
+              </div>
+              <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
+                <Users className="size-5" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Error banner */}
       {error && (
@@ -350,8 +439,194 @@ export default function UserActivityPage({
         </div>
       )}
 
-      {/* Main Tabs — defaultValue matches the default filter "history" */}
-      <Tabs defaultValue="history" onValueChange={handleTabChange} className="w-full">
+      {/* Main Content: Claimed Bars (if bar_owner) OR Tabs (if regular user) */}
+      {isBarOwner ? (
+        <Card className="border">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Building2 className="size-5 text-orange-600" />
+                  Claimed Bars & Venues
+                </CardTitle>
+                <CardDescription>
+                  Venues claimed and managed by this bar owner
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="text-xs">
+                {claimedBars.length} {claimedBars.length === 1 ? "Venue" : "Venues"}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {claimedBarsLoading ? (
+              <div className="flex items-center justify-center h-32 gap-2 text-sm text-muted-foreground">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                Loading claimed venues...
+              </div>
+            ) : (
+              <div className="rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[220px]">Venue Information</TableHead>
+                      <TableHead className="min-w-[180px]">Contact Person</TableHead>
+                      <TableHead className="min-w-[140px]">Proof of Ownership</TableHead>
+                      <TableHead className="min-w-[120px]">Claimed Date</TableHead>
+                      <TableHead className="min-w-[100px]">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {claimedBars.length ? (
+                      claimedBars.map((claim) => {
+                        const venue = claim.venue;
+                        const venueName =
+                          venue?.name || claim.venueName || "Venue Removed / Unavailable";
+                        const venueAddress = venue?.address || claim.venueAddress || "—";
+                        const placeId = venue?.placeId;
+                        const coverImage = venue?.coverImage;
+
+                        const contactName = claim.contactName || claim.name || "Not provided";
+                        const contactEmail = claim.contactEmail || claim.email || "";
+
+                        let proofUrl: string | null = null;
+                        if (typeof claim.ownershipProof === "string") {
+                          proofUrl = claim.ownershipProof;
+                        } else if (claim.ownershipProof?.location) {
+                          proofUrl = claim.ownershipProof.location;
+                        } else if (claim.ownershipProof?.url) {
+                          proofUrl = claim.ownershipProof.url;
+                        }
+
+                        const isImage =
+                          proofUrl &&
+                          (/\.(jpg|jpeg|png|webp|avif|gif|jfif)(\?.*)?$/i.test(proofUrl) ||
+                            proofUrl.includes("/images/") ||
+                            proofUrl.includes("/others/"));
+
+                        return (
+                          <TableRow key={claim._id} className="hover:bg-muted/30 transition-colors">
+                            {/* Venue Details */}
+                            <TableCell>
+                              <div className="flex items-start gap-2.5">
+                                <div className="size-9 rounded-md overflow-hidden border shrink-0 bg-muted mt-0.5">
+                                  <ImageWithFallback
+                                    src={coverImage || DUMMY_IMAGE}
+                                    alt={venueName}
+                                    fallbackSrc={DUMMY_IMAGE}
+                                    className="size-full object-cover"
+                                  />
+                                </div>
+                                <div className="flex flex-col min-w-0 max-w-[260px]">
+                                  <span
+                                    className="font-semibold text-foreground truncate"
+                                    title={venueName}
+                                  >
+                                    {venueName}
+                                  </span>
+                                  <span
+                                    className="text-xs text-muted-foreground truncate"
+                                    title={venueAddress}
+                                  >
+                                    {venueAddress}
+                                  </span>
+                                  {placeId && (
+                                    <span className="text-[10px] text-muted-foreground font-mono truncate">
+                                      Place ID: {placeId}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </TableCell>
+
+                            {/* Contact Person */}
+                            <TableCell>
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-medium text-foreground text-sm flex items-center gap-1.5 truncate">
+                                  <User className="size-3.5 text-blue-600 shrink-0" />
+                                  <span className="truncate">{contactName}</span>
+                                </span>
+                                {contactEmail && (
+                                  <a
+                                    href={`mailto:${contactEmail}`}
+                                    className="text-xs text-muted-foreground hover:text-primary truncate block mt-0.5"
+                                    title={contactEmail}
+                                  >
+                                    {contactEmail}
+                                  </a>
+                                )}
+                              </div>
+                            </TableCell>
+
+                            {/* Proof of Ownership */}
+                            <TableCell>
+                              {proofUrl ? (
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleOpenFullscreen(proofUrl!, venueName, contactName)
+                                    }
+                                    className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md border bg-muted/30 hover:bg-muted text-primary cursor-pointer transition-colors"
+                                    title="Click to view full screen"
+                                  >
+                                    {isImage ? (
+                                      <ImageIcon className="size-3.5 text-blue-600 shrink-0" />
+                                    ) : (
+                                      <FileText className="size-3.5 text-purple-600 shrink-0" />
+                                    )}
+                                    <span>View Proof</span>
+                                    <Maximize2 className="size-3 text-muted-foreground ml-0.5 shrink-0" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-muted-foreground italic">
+                                  No file attached
+                                </span>
+                              )}
+                            </TableCell>
+
+                            {/* Claimed Date */}
+                            <TableCell className="text-xs text-muted-foreground">
+                              {formatDate(claim.claimedAt || claim.createdAt)}
+                            </TableCell>
+
+                            {/* Status */}
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={`capitalize text-xs font-semibold ${getClaimStatusColor(
+                                  claim.status
+                                )}`}
+                              >
+                                {claim.status}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <Building2 className="size-8 text-muted-foreground/40 mb-1" />
+                            <p className="font-medium text-foreground">No claimed bars found</p>
+                            <p className="text-xs text-muted-foreground">
+                              This bar owner has not claimed any venues yet.
+                            </p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        /* Main Tabs — defaultValue matches the default filter "history" */
+        <Tabs defaultValue="history" onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-2 lg:max-w-md">
           <TabsTrigger value="history">Attendance History</TabsTrigger>
           <TabsTrigger value="friends">Friends List</TabsTrigger>
@@ -614,6 +889,15 @@ export default function UserActivityPage({
           </Card>
         </TabsContent>
       </Tabs>
+      )}
+
+      {/* Fullscreen Proof Lightbox */}
+      <LightboxProofViewer
+        open={fullscreenProofOpen}
+        onClose={() => setFullscreenProofOpen(false)}
+        imageUrl={fullscreenProof?.url || null}
+        title={fullscreenProof ? `${fullscreenProof.venueName} - Proof` : undefined}
+      />
     </div>
   );
 }

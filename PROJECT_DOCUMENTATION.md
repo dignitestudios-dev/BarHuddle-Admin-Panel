@@ -169,12 +169,14 @@ Redux store.dispatch(setCredentials)  middleware.ts verifies access
     * Calls `PATCH /admin/users/:id/ban`.
   * **User Activation**: Single-click `PATCH /admin/users/:id/unban`.
 * **User Profile Screen (`/dashboard/users/[id]`)**:
-  * Comprehensive card view: Avatar, Email, Role, Joined Date, Last Updated Date, Date of Birth, Gender, Email Verification check, Profile Completion check, and Ban reason (if banned).
+  * Comprehensive card view: Avatar, Email, Role, Joined Date, Last Updated Date, Date of Birth & Gender (hidden for `bar_owner` role), Email Verification check, Profile Completion check, and Ban reason (if banned).
   * Direct action buttons to toggle deactivation or jump to Activity Logs.
 * **User Activity Logs (`/dashboard/users/[id]/activity`)**:
-  * **Attendance History Tab**: Venue name, address, check-in time, checkout time, active status badge (`Active` vs `Left`) with server pagination.
-  * **Friends List Tab**: Connected friendships list with avatar, name, email, gender, DOB, local search filter, and server pagination. Clickable rows redirecting to that friend's profile.
-  * **Messages Tab**: Chat room / group indicator, message content preview, message type, timestamp with server pagination.
+  * **Bar Owner View (`role === 'bar_owner'`)**: Stat cards and the two user tabs (Attendance History, Friends List) are hidden; displays a dedicated **Claimed Bars & Venues** table showing venues claimed by the bar owner, venue cover image, address, contact person, proof of ownership with fullscreen lightbox viewer, claimed date, and status badges.
+  * **Regular User View**:
+    * Summary cards: Venue Check-ins count, Friends count.
+    * **Attendance History Tab**: Venue name, address, check-in time, checkout time, active status badge (`Active` vs `Left`) with server pagination.
+    * **Friends List Tab**: Connected friendships list with avatar, name, email, gender, DOB, local search filter, and server pagination. Clickable rows redirecting to that friend's profile.
 
 ### 4.4. Moderation Subsystem (`/dashboard/moderation`)
 * **Reports Review (`/dashboard/moderation/reports`)**:
