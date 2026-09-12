@@ -98,8 +98,11 @@ const ResetPasswordForm = () => {
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              onClick={() => setShowPassword((prev) => !prev)}
+              disabled={loading}
+              tabIndex={-1}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer z-10 disabled:pointer-events-none"
             >
               {showPassword ? (
                 <EyeOff className="h-5 w-5" />
@@ -125,8 +128,11 @@ const ResetPasswordForm = () => {
             />
             <button
               type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              disabled={loading}
+              tabIndex={-1}
+              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer z-10 disabled:pointer-events-none"
             >
               {showConfirmPassword ? (
                 <EyeOff className="h-5 w-5" />

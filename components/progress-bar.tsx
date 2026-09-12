@@ -26,6 +26,7 @@ export function ProgressBar() {
       // Clear any existing timeout
       if (progressTimeoutRef.current) {
         clearTimeout(progressTimeoutRef.current);
+        progressTimeoutRef.current = null;
       }
       
       // Complete the progress bar after page loads
@@ -38,19 +39,33 @@ export function ProgressBar() {
     const originalPush = router.push;
     const originalReplace = router.replace;
 
-    (router.push as any) = function (this: any, href: string, options?: any) {
+    const startProgressWithTimeout = () => {
+      if (progressTimeoutRef.current) {
+        clearTimeout(progressTimeoutRef.current);
+      }
       NProgress.start();
+      // Safety fallback: if navigation stalls or redirects to same page, complete progress bar
+      progressTimeoutRef.current = setTimeout(() => {
+        NProgress.done();
+      }, 5000);
+    };
+
+    (router.push as any) = function (this: any, href: string, options?: any) {
+      startProgressWithTimeout();
       return originalPush.call(this, href, options);
     };
 
     (router.replace as any) = function (this: any, href: string, options?: any) {
-      NProgress.start();
+      startProgressWithTimeout();
       return originalReplace.call(this, href, options);
     };
 
     return () => {
+      (router.push as any) = originalPush;
+      (router.replace as any) = originalReplace;
       if (progressTimeoutRef.current) {
         clearTimeout(progressTimeoutRef.current);
+        progressTimeoutRef.current = null;
       }
     };
   }, [router]);

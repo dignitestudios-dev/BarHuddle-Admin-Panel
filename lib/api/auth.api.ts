@@ -6,10 +6,11 @@ export const loginApi = async (credentials: { email: string; password: string })
   const response = await API.post('/login', credentials);
   const data = response.data;
 
-  // Persist the JWT so the request interceptor can attach it automatically
-  if (data?.data?.token) {
-    localStorage.setItem('authToken', data.data.token);
-    setCookie('authToken', data.data.token, 7);
+  // Persist the JWT so the request interceptor and middleware can attach/read it automatically
+  const token = data?.data?.token ?? data?.token;
+  if (token) {
+    localStorage.setItem('authToken', token);
+    setCookie('authToken', token, 7);
   }
 
   return data;
@@ -27,9 +28,10 @@ export const verifyOtpApi = async (payload: { email: string; otp: number }) => {
   const data = response.data;
 
   // Store the resetToken returned after successful OTP verification
-  if (data?.data?.resetToken) {
-    localStorage.setItem('resetToken', data.data.resetToken);
-    setCookie('resetToken', data.data.resetToken, 1);
+  const resetToken = data?.data?.resetToken ?? data?.resetToken;
+  if (resetToken) {
+    localStorage.setItem('resetToken', resetToken);
+    setCookie('resetToken', resetToken, 1);
   }
 
   return data;

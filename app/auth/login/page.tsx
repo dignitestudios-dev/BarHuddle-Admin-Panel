@@ -29,9 +29,17 @@ const Login = () => {
     try {
       const data = await loginApi({ email, password });
 
-      // Adapt to your API response shape — adjust if needed
-      const user = data?.data?.admin ?? data?.admin ?? data?.data?.user ?? data?.user ?? { id: "", name: "Admin", email };
+      // Adapt to your API response shape
+      const user =
+        data?.data?.admin ??
+        data?.admin ??
+        data?.data?.user ??
+        data?.user ?? { id: "", name: "Admin", email };
       const token = data?.data?.token ?? data?.token ?? "";
+
+      if (!token) {
+        throw new Error(data?.message || "Authentication token not received.");
+      }
 
       dispatch(setCredentials({ user, token }));
       router.push("/dashboard");
@@ -39,6 +47,7 @@ const Login = () => {
       const message =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
+        err?.message ||
         "Invalid email or password. Please try again.";
       setError(message);
     } finally {
@@ -73,11 +82,6 @@ const Login = () => {
           />
         </div>
 
-
-
-
-
-
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
           <div className="relative">
@@ -93,8 +97,11 @@ const Login = () => {
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              onClick={() => setShowPassword((prev) => !prev)}
+              disabled={loading}
+              tabIndex={-1}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer z-10 disabled:pointer-events-none"
             >
               {showPassword ? (
                 <EyeOff className="h-5 w-5" />
