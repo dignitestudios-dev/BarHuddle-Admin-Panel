@@ -122,6 +122,7 @@ export interface UserProfilePicture {
 
 export interface AdminUser {
   _id: string;
+  userName?: string | null;
   name: string | null;
   email: string;
   profilePicture: UserProfilePicture | null;

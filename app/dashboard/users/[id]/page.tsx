@@ -158,13 +158,16 @@ export default function UserProfilePage({
     );
   }
 
-  const getInitials = (name: string | null, email: string) => {
+  const getInitials = (name: string | null, email: string, userName?: string | null) => {
     if (name) {
       const parts = name.trim().split(/\s+/);
       if (parts.length >= 2) {
         return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
       }
       return name.substring(0, 2).toUpperCase();
+    }
+    if (userName) {
+      return userName.substring(0, 2).toUpperCase();
     }
     return email.substring(0, 2).toUpperCase();
   };
@@ -205,7 +208,7 @@ export default function UserProfilePage({
           </Button>
         </Link>
         <span className="text-muted-foreground">/</span>
-        <span className="text-sm font-medium">{user.name || user.email}</span>
+        <span className="text-sm font-medium">{user.name || (user.userName ? `@${user.userName}` : user.email)}</span>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -220,18 +223,21 @@ export default function UserProfilePage({
                   {avatarSrc && (
                     <AvatarImage
                       src={avatarSrc}
-                      alt={user.name || user.email}
+                      alt={user.name || user.userName || user.email}
                       className="object-cover"
                     />
                   )}
                   <AvatarFallback className="text-2xl font-bold">
-                    {getInitials(user.name, user.email)}
+                    {getInitials(user.name, user.email, user.userName)}
                   </AvatarFallback>
                 </Avatar>
               );
             })()}
             <div>
               <h2 className="text-xl font-bold">{user.name || "No Name"}</h2>
+              {user.userName && (
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mt-0.5">@{user.userName}</p>
+              )}
               <p className="text-muted-foreground text-sm">{user.email}</p>
               {user.isDeactivatedByAdmin && user.banReason && (
                 <div className="mt-2.5 text-xs text-red-700 bg-red-50/50 border border-red-200 px-3 py-1.5 rounded-lg max-w-xs mx-auto text-left">
@@ -311,6 +317,18 @@ export default function UserProfilePage({
               <CardTitle className="text-base">Personal & Account Information</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-6 sm:grid-cols-2">
+              {user.userName && (
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-indigo-50 p-2">
+                    <UserIcon className="size-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs font-medium">Username</p>
+                    <p className="text-sm font-semibold text-foreground">@{user.userName}</p>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center gap-3">
                 <div className="rounded-lg bg-blue-50 p-2">
                   <Mail className="size-4 text-blue-600" />

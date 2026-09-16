@@ -78,13 +78,16 @@ export function DataTable({
   onDeleteUser,
 }: DataTableProps) {
   // Get initials for Avatar fallback
-  const getInitials = (name: string | null, email: string) => {
+  const getInitials = (name: string | null, email: string, userName?: string | null) => {
     if (name) {
       const parts = name.trim().split(/\s+/);
       if (parts.length >= 2) {
         return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
       }
       return name.substring(0, 2).toUpperCase();
+    }
+    if (userName) {
+      return userName.substring(0, 2).toUpperCase();
     }
     return email.substring(0, 2).toUpperCase();
   };
@@ -126,7 +129,7 @@ export function DataTable({
           <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
           <Input
             id="user-search"
-            placeholder="Search by name or email..."
+            placeholder="Search by name, username, or email..."
             value={searchQuery}
             onChange={(e) => onSearchQueryChange(e.target.value)}
             className="pl-9"
@@ -154,6 +157,7 @@ export function DataTable({
           <TableHeader>
             <TableRow>
               <TableHead>User</TableHead>
+              <TableHead>Username</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Email Verified</TableHead>
               <TableHead>Profile Complete</TableHead>
@@ -165,7 +169,7 @@ export function DataTable({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
                   <div className="flex items-center justify-center gap-2">
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                     Loading users...
@@ -188,12 +192,12 @@ export function DataTable({
                           {avatarSrc && (
                             <AvatarImage
                               src={avatarSrc}
-                              alt={user.name || user.email}
+                              alt={user.name || user.userName || user.email}
                               className="object-cover"
                             />
                           )}
                           <AvatarFallback className="text-xs font-semibold">
-                            {getInitials(user.name, user.email)}
+                            {getInitials(user.name, user.email, user.userName)}
                           </AvatarFallback>
                         </Avatar>
                       );
@@ -207,6 +211,15 @@ export function DataTable({
                         </span>
                       </div>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    {user.userName ? (
+                      <span className="font-medium text-sm text-gray-600 dark:text-gray-300">
+                        @{user.userName}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={getRoleColor(user.role)}>
@@ -329,7 +342,7 @@ export function DataTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                   No users found matching your search.
                 </TableCell>
               </TableRow>
