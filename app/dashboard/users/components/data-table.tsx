@@ -104,6 +104,14 @@ export function DataTable({
     }
   };
 
+  const formatPlanName = (plan: string | null | undefined) => {
+    if (!plan) return "";
+    return plan
+      .split(/[_-]/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   // Backend is doing all searching and filtering, so we display the users array directly
   const displayedUsers = users;
 
@@ -155,6 +163,7 @@ export function DataTable({
             <TableRow>
               <TableHead>User</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>Subscription</TableHead>
               <TableHead>Email Verified</TableHead>
               <TableHead>Profile Complete</TableHead>
               <TableHead>Status</TableHead>
@@ -165,7 +174,7 @@ export function DataTable({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
                   <div className="flex items-center justify-center gap-2">
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                     Loading users...
@@ -203,7 +212,7 @@ export function DataTable({
                           {user.name || "No Name"}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {user.email}
+                          {user.userName ? `@${user.userName} · ${user.email}` : user.email}
                         </span>
                       </div>
                     </div>
@@ -212,6 +221,23 @@ export function DataTable({
                     <Badge variant="outline" className={getRoleColor(user.role)}>
                       {user.role}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {user.isSubscribed ? (
+                      <Badge
+                        variant="outline"
+                        className="text-emerald-700 bg-emerald-50 border-emerald-200 capitalize font-medium whitespace-nowrap"
+                      >
+                        {formatPlanName(user.subscriptionPlan) || "Subscribed"}
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="text-muted-foreground bg-muted/40 border-muted font-normal whitespace-nowrap"
+                      >
+                        No Plan
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -329,7 +355,7 @@ export function DataTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                   No users found matching your search.
                 </TableCell>
               </TableRow>

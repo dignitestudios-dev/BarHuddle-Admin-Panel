@@ -120,6 +120,7 @@ export interface UserProfilePicture {
 
 export interface AdminUser {
   _id: string;
+  userName?: string;
   name: string | null;
   email: string;
   profilePicture: UserProfilePicture | null;
@@ -133,6 +134,8 @@ export interface AdminUser {
   isDeactivatedByAdmin: boolean;
   banReason: string | null;
   bannedAt: string | null;
+  isSubscribed?: boolean;
+  subscriptionPlan?: string | null;
 }
 
 export interface UsersResponse {
@@ -456,4 +459,4 @@ export const updateVenueClaimStatusApi = async (
   const response = await API.put(`/venue-owners/${claimId}`, { status });
   return response.data;
 };
-
+
