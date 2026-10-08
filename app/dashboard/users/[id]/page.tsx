@@ -16,6 +16,7 @@ import {
   Trash2,
   AlertCircle,
   HelpCircle,
+  CreditCard,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -181,6 +182,14 @@ export default function UserProfilePage({
     });
   };
 
+  const formatPlanName = (plan: string | null | undefined) => {
+    if (!plan) return "";
+    return plan
+      .split(/[_-]/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   const getGenderLabel = (gender: string | null) => {
     if (!gender) return "Not specified";
     switch (gender.toLowerCase()) {
@@ -257,6 +266,22 @@ export default function UserProfilePage({
               >
                 {user.role}
               </Badge>
+              {user.isSubscribed ? (
+                <Badge
+                  variant="outline"
+                  className="text-emerald-700 bg-emerald-50 border-emerald-200 capitalize font-medium"
+                >
+                  <CreditCard className="mr-1 size-3" />
+                  {formatPlanName(user.subscriptionPlan) || "Subscribed"}
+                </Badge>
+              ) : (
+                <Badge
+                  variant="outline"
+                  className="text-muted-foreground bg-muted/40 border-muted font-normal"
+                >
+                  No Subscription
+                </Badge>
+              )}
               <Badge
                 variant="outline"
                 className={
@@ -350,6 +375,20 @@ export default function UserProfilePage({
               </div>
 
               <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-indigo-50 p-2">
+                  <CreditCard className="size-4 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs font-medium">Subscription</p>
+                  <p className="text-sm font-semibold text-foreground capitalize">
+                    {user.isSubscribed
+                      ? formatPlanName(user.subscriptionPlan) || "Subscribed"
+                      : "No Subscription"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
                 <div className="rounded-lg bg-orange-50 p-2">
                   <Calendar className="size-4 text-orange-600" />
                 </div>
@@ -408,7 +447,7 @@ export default function UserProfilePage({
             <CardHeader>
               <CardTitle className="text-base">System Check & Statuses</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 grid-cols-2">
+            <CardContent className="grid gap-4 sm:grid-cols-3">
               <div className="rounded-xl border p-4 flex flex-col justify-between h-24">
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                   Email Verification
@@ -447,6 +486,29 @@ export default function UserProfilePage({
                     }
                   >
                     {user.isProfileCompleted ? "Completed" : "Draft"}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="rounded-xl border p-4 flex flex-col justify-between h-24">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                  Subscription Status
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-bold">
+                    {user.isSubscribed ? "Active" : "Inactive"}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className={
+                      user.isSubscribed
+                        ? "text-emerald-700 bg-emerald-50 border-emerald-200 capitalize"
+                        : "text-gray-700 bg-gray-50 border-gray-200"
+                    }
+                  >
+                    {user.isSubscribed
+                      ? formatPlanName(user.subscriptionPlan) || "Subscribed"
+                      : "No Plan"}
                   </Badge>
                 </div>
               </div>

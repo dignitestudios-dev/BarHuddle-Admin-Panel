@@ -45,7 +45,6 @@ interface ChartPoint {
   label: string;
   newUsers: number;
   venueVisits: number;
-  messages: number;
 }
 
 function transformTrends(trends: TrendPoint[], period: TrendPeriod): ChartPoint[] {
@@ -55,7 +54,6 @@ function transformTrends(trends: TrendPoint[], period: TrendPeriod): ChartPoint[
       label: formatDate(t.date, period),
       newUsers: t.newUsers ?? 0,
       venueVisits: t.venueVisits ?? 0,
-      messages: t.messages ?? 0,
     }));
 }
 
@@ -100,11 +98,10 @@ function PeriodBtn({
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-        active
-          ? "bg-primary text-primary-foreground"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted"
-      }`}
+      className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${active
+        ? "bg-primary text-primary-foreground"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        }`}
     >
       {label}
     </button>
@@ -148,9 +145,8 @@ export function ChartActivityTrends() {
     (acc, d) => ({
       newUsers: acc.newUsers + d.newUsers,
       venueVisits: acc.venueVisits + d.venueVisits,
-      messages: acc.messages + d.messages,
     }),
-    { newUsers: 0, venueVisits: 0, messages: 0 }
+    { newUsers: 0, venueVisits: 0 }
   );
 
   return (
@@ -163,7 +159,7 @@ export function ChartActivityTrends() {
               Activity Trends
             </CardTitle>
             <CardDescription className="mt-0.5">
-              New users · Venue visits · Messages over time
+              New users · Venue visits over time
             </CardDescription>
           </div>
           {/* Period selector + refresh */}
@@ -222,10 +218,6 @@ export function ChartActivityTrends() {
                     <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.35} />
                     <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.0} />
                   </linearGradient>
-                  <linearGradient id="gradMessages" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-3)" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="var(--chart-3)" stopOpacity={0.0} />
-                  </linearGradient>
                 </defs>
                 <CartesianGrid
                   vertical={false}
@@ -268,16 +260,6 @@ export function ChartActivityTrends() {
                   dot={false}
                   activeDot={{ r: 4, strokeWidth: 0 }}
                 />
-                <Area
-                  type="monotone"
-                  dataKey="messages"
-                  name="messages"
-                  stroke="var(--chart-3)"
-                  strokeWidth={2}
-                  fill="url(#gradMessages)"
-                  dot={false}
-                  activeDot={{ r: 4, strokeWidth: 0 }}
-                />
               </AreaChart>
             </ResponsiveContainer>
 
@@ -292,15 +274,10 @@ export function ChartActivityTrends() {
                   <div className="h-2.5 w-2.5 rounded-full bg-[var(--chart-2)]" />
                   <span className="text-muted-foreground">Venue Visits</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-[var(--chart-3)]" />
-                  <span className="text-muted-foreground">Messages</span>
-                </div>
               </div>
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span>Users: <strong className="text-foreground">{totals.newUsers}</strong></span>
                 <span>Visits: <strong className="text-foreground">{totals.venueVisits}</strong></span>
-                <span>Msgs: <strong className="text-foreground">{totals.messages}</strong></span>
               </div>
             </div>
           </>

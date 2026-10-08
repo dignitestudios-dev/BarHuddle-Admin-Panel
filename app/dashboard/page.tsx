@@ -115,7 +115,7 @@ export default function Dashboard() {
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
-          "Failed to load dashboard data. Please try again."
+        "Failed to load dashboard data. Please try again."
       );
     } finally {
       setLoading(false);
@@ -129,43 +129,43 @@ export default function Dashboard() {
   // ── Stat cards derived from real API data ────────────────────────────────────
   const statCards: StatCardProps[] = data
     ? [
-        {
-          title: "Total Users",
-          value: data.totalUsers.toLocaleString(),
-          sub: "Registered on the platform",
-          icon: Users,
-          color: "text-blue-600 bg-blue-50",
-          badge: "All time",
-          badgeColor: "border-blue-200 bg-blue-50 text-blue-700",
-        },
-        {
-          title: "Active Users",
-          value: data.activeUsers.toLocaleString(),
-          sub: "Currently active accounts",
-          icon: UserCheck,
-          color: "text-green-600 bg-green-50",
-          badge: "Live",
-          badgeColor: "border-green-200 bg-green-50 text-green-700",
-        },
-        {
-          title: "At Venues Now",
-          value: data.attendance.currentlyAtVenues.toLocaleString(),
-          sub: `${data.attendance.todayCheckIns} check-ins today`,
-          icon: MapPin,
-          color: "text-orange-600 bg-orange-50",
-          badge: "Attendance",
-          badgeColor: "border-orange-200 bg-orange-50 text-orange-700",
-        },
-        {
-          title: "Today's Check-ins",
-          value: data.attendance.todayCheckIns.toLocaleString(),
-          sub: "Venue check-ins logged today",
-          icon: CalendarCheck2,
-          color: "text-purple-600 bg-purple-50",
-          badge: "Today",
-          badgeColor: "border-purple-200 bg-purple-50 text-purple-700",
-        },
-      ]
+      {
+        title: "Total Users",
+        value: data.totalUsers.toLocaleString(),
+        sub: "Registered on the platform",
+        icon: Users,
+        color: "text-blue-600 bg-blue-50",
+        badge: "All time",
+        badgeColor: "border-blue-200 bg-blue-50 text-blue-700",
+      },
+      {
+        title: "Active Users",
+        value: data.activeUsers.toLocaleString(),
+        sub: "Currently active accounts",
+        icon: UserCheck,
+        color: "text-green-600 bg-green-50",
+        badge: "Live",
+        badgeColor: "border-green-200 bg-green-50 text-green-700",
+      },
+      {
+        title: "At Venues Now",
+        value: data.attendance.currentlyAtVenues.toLocaleString(),
+        sub: `${data.attendance.todayCheckIns} check-ins today`,
+        icon: MapPin,
+        color: "text-orange-600 bg-orange-50",
+        badge: "Attendance",
+        badgeColor: "border-orange-200 bg-orange-50 text-orange-700",
+      },
+      {
+        title: "Today's Check-ins",
+        value: data.attendance.todayCheckIns.toLocaleString(),
+        sub: "Venue check-ins logged today",
+        icon: CalendarCheck2,
+        color: "text-purple-600 bg-purple-50",
+        badge: "Today",
+        badgeColor: "border-purple-200 bg-purple-50 text-purple-700",
+      },
+    ]
     : [];
 
   return (
