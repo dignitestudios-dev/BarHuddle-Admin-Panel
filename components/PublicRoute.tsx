@@ -11,15 +11,17 @@ interface PublicRouteProps {
 
 export function PublicRoute({ children }: PublicRouteProps) {
   const router = useRouter();
-  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const { isAuthenticated, isInitialized } = useSelector(
+    (state: RootState) => state.auth
+  );
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isInitialized && isAuthenticated) {
       router.push('/dashboard');
     }
-  }, [isAuthenticated, router]);
+  }, [isInitialized, isAuthenticated, router]);
 
-  if (isAuthenticated) {
+  if (isInitialized && isAuthenticated) {
     return null;
   }
 

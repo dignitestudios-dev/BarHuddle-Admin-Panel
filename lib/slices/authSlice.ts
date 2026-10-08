@@ -1,59 +1,85 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getCookie, eraseCookie } from '../utils';
+import { getCookie, setCookie, eraseCookie } from '../utils';
 
-interface User {
+export interface User {
   id: string | number;
   name: string;
   email: string;
   role?: string;
 }
 
-interface AuthState {
+export interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isInitialized: boolean;
 }
 
-const getStoredToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('authToken') || getCookie('authToken');
-};
-
-const getStoredUser = (): User | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const userStr = localStorage.getItem('authUser');
-    return userStr ? JSON.parse(userStr) : null;
-  } catch {
-    return null;
-  }
-};
-
 const initialState: AuthState = {
-  user: getStoredUser(),
-  token: getStoredToken(),
-  isAuthenticated: !!getStoredToken(),
+  user: null,
+  token: null,
+  isAuthenticated: false,
+  isInitialized: false,
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    initializeAuth: (state) => {
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('authToken') || getCookie('authToken');
+        let user: User | null = null;
+        try {
+          const userStr = localStorage.getItem('authUser');
+          user = userStr ? JSON.parse(userStr) : null;
+        } catch {
+          user = null;
+        }
+
+        if (token) {
+          state.token = token;
+          state.user = user;
+          state.isAuthenticated = true;
+          // Synchronize token between localStorage and cookies
+          if (!getCookie('authToken')) {
+            setCookie('authToken', token, 7);
+          }
+          if (!localStorage.getItem('authToken')) {
+            localStorage.setItem('authToken', token);
+          }
+        } else {
+          state.token = null;
+          state.user = null;
+          state.isAuthenticated = false;
+        }
+      }
+      state.isInitialized = true;
+    },
     setCredentials: (
       state,
       action: PayloadAction<{ user: User; token: string }>
     ) => {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
-      state.isAuthenticated = true;
+      const { user, token } = action.payload;
+      state.user = user;
+      state.token = token;
+      state.isAuthenticated = Boolean(token);
+      state.isInitialized = true;
       if (typeof window !== 'undefined') {
-        localStorage.setItem('authUser', JSON.stringify(action.payload.user));
+        if (token) {
+          localStorage.setItem('authToken', token);
+          setCookie('authToken', token, 7);
+        }
+        if (user) {
+          localStorage.setItem('authUser', JSON.stringify(user));
+        }
       }
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      state.isInitialized = true;
       if (typeof window !== 'undefined') {
         localStorage.removeItem('authToken');
         localStorage.removeItem('resetToken');
@@ -65,5 +91,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, logout } = authSlice.actions;
+export const { initializeAuth, setCredentials, logout } = authSlice.actions;
 export default authSlice.reducer;

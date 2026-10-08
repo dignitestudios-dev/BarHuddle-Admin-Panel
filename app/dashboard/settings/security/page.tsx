@@ -148,8 +148,11 @@ const SecuritySettings = () => {
               />
               <button
                 type="button"
-                onClick={() => setShowCurrent(!showCurrent)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
+                onClick={() => setShowCurrent((prev) => !prev)}
+                disabled={loading}
+                tabIndex={-1}
+                aria-label={showCurrent ? "Hide current password" : "Show current password"}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground cursor-pointer z-10 disabled:pointer-events-none"
               >
                 {showCurrent ? (
                   <EyeOff className="h-4 w-4" />
@@ -176,8 +179,11 @@ const SecuritySettings = () => {
               />
               <button
                 type="button"
-                onClick={() => setShowNew(!showNew)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
+                onClick={() => setShowNew((prev) => !prev)}
+                disabled={loading}
+                tabIndex={-1}
+                aria-label={showNew ? "Hide new password" : "Show new password"}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground cursor-pointer z-10 disabled:pointer-events-none"
               >
                 {showNew ? (
                   <EyeOff className="h-4 w-4" />
@@ -241,8 +247,11 @@ const SecuritySettings = () => {
               />
               <button
                 type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
+                onClick={() => setShowConfirm((prev) => !prev)}
+                disabled={loading}
+                tabIndex={-1}
+                aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground cursor-pointer z-10 disabled:pointer-events-none"
               >
                 {showConfirm ? (
                   <EyeOff className="h-4 w-4" />
