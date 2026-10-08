@@ -136,6 +136,8 @@ export interface AdminUser {
   isDeactivatedByAdmin: boolean;
   banReason: string | null;
   bannedAt: string | null;
+  isSubscribed?: boolean;
+  subscriptionPlan?: string | null;
 }
 
 export interface UsersResponse {
